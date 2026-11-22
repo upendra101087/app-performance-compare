@@ -20,13 +20,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Appium Java Client (v9.x) Automation Test for ShopEasy on Appium Device Farm Hub.
+ * Appium Java Automation Test for ShopEasy on Appium Device Farm Hub.
  *
  * Configured specifically for:
  *   - Device Farm Hub URL: http://127.0.0.1:31337/wd/hub
- *   - Device: Real Android Device (LAVA LXX504 / UDID: AGN2DK23IB022871)
- *   - Uploaded App: Shopeasy.apk (Device Farm asset: file-1795353402295.apk)
- *   - Package: com.example.shopeasy
+ *   - Target Device: Real Android Device (LAVA LXX504 / UDID: AGN2DK23IB022871)
+ *   - Application: Shopeasy.apk (Package: com.example.shopeasy)
  *   - Activity: com.example.shopeasy.MainActivity
  */
 public class ShopEasyDeviceFarmTest {
@@ -34,13 +33,8 @@ public class ShopEasyDeviceFarmTest {
     private AndroidDriver driver;
     private WebDriverWait wait;
 
-    // Device Farm Hub endpoint configured in hub-config.json
+    // Device Farm Hub endpoint from hub-config.json
     private static final String HUB_URL = "http://127.0.0.1:31337/wd/hub";
-
-    // Device Farm uploaded app reference
-    // You can use either the local asset identifier or the direct HTTP endpoint from the Hub
-    private static final String APP_REFERENCE = "file-1795353402295.apk";
-    private static final String APP_HTTP_URL = "http://127.0.0.1:31337/device-farm/apps/file-1795353402295.apk";
 
     // Target Lava Real Device
     private static final String DEVICE_UDID = "AGN2DK23IB022871";
@@ -52,127 +46,140 @@ public class ShopEasyDeviceFarmTest {
         System.out.println("🚀 Initializing Appium Device Farm Session...");
         System.out.println("Connecting to Hub: " + HUB_URL);
         System.out.println("Targeting Device: " + DEVICE_NAME + " (" + DEVICE_UDID + ")");
-        System.out.println("Application: Shopeasy.apk -> " + APP_REFERENCE);
         System.out.println("==================================================");
 
-        UiAutomator2Options options = new UiAutomator2Options();
-        options.setPlatformName("Android");
-        options.setAutomationName("UiAutomator2");
+        try {
+            UiAutomator2Options options = new UiAutomator2Options();
+            options.setPlatformName("Android");
+            options.setAutomationName("UiAutomator2");
 
-        // Target your Lava real device attached to the Hub
-        options.setUdid(DEVICE_UDID);
-        options.setDeviceName(DEVICE_NAME);
+            // Target the connected Lava device
+            options.setUdid(DEVICE_UDID);
+            options.setDeviceName(DEVICE_NAME);
 
-        // App capability: Device Farm accepts either the uploaded filename or direct URL
-        options.setApp(APP_HTTP_URL);
+            // Package & Activity discovered from Shopeasy.apk
+            options.setAppPackage("com.example.shopeasy");
+            options.setAppActivity("com.example.shopeasy.MainActivity");
 
-        // Package & Activity discovered from Shopeasy.apk manifest
-        options.setAppPackage("com.example.shopeasy");
-        options.setAppActivity("com.example.shopeasy.MainActivity");
+            // Reuse already installed app without reinstalling every run
+            options.setNoReset(true);
+            options.setAutoGrantPermissions(true);
 
-        // Session settings
-        options.setNoReset(false); // Clean install / fresh start
-        options.setAutoGrantPermissions(true);
-        options.setNewCommandTimeout(Duration.ofSeconds(180));
+            // Screen & unlock management
+            options.setCapability("appium:skipUnlock", true);
+            options.setCapability("appium:ignoreHiddenApiPolicyError", true);
+            options.setNewCommandTimeout(Duration.ofSeconds(180));
 
-        // Connect to Appium Device Farm Hub
-        URL hubUrl = URI.create(HUB_URL).toURL();
-        driver = new AndroidDriver(hubUrl, options);
-        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+            URL hubUrl = URI.create(HUB_URL).toURL();
+            System.out.println("⏳ Sending session creation request to Device Farm Hub...");
+            driver = new AndroidDriver(hubUrl, options);
+            wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        System.out.println("✅ Session created successfully! Session ID: " + driver.getSessionId());
-        System.out.println("Device Farm Allocated Device: " + driver.getCapabilities().getCapability("appium:deviceName"));
+            System.out.println("✅ Session created successfully! Session ID: " + driver.getSessionId());
+        } catch (Throwable t) {
+            System.err.println("\n❌ FAILED TO CREATE APPIUM SESSION!");
+            System.err.println("Root Cause: " + t.getClass().getName() + ": " + t.getMessage());
+            t.printStackTrace(System.err);
+            throw new RuntimeException("Could not initialize Appium session on Device Farm Hub", t);
+        }
     }
 
     @Test
-    public void testShopEasyAddProductToCart() {
+    public void testShopEasyAddProductToCart() throws InterruptedException {
         System.out.println("\n--- Step 1: Verify ShopEasy App Launched ---");
-        // Wait for MainActivity / home container to be active
-        wait.until(d -> driver.getCurrentPackage().contains("shopeasy"));
+        wait.until(d -> driver.getCurrentPackage() != null && driver.getCurrentPackage().contains("shopeasy"));
         System.out.println("Active Package: " + driver.getCurrentPackage());
         System.out.println("Active Activity: " + driver.currentActivity());
 
-        System.out.println("\n--- Step 2: Locate Products on Screen ---");
-        // Wait for Compose product elements or any button/text with product content
-        try {
-            Thread.sleep(3000); // Allow Compose UI tree to complete rendering
-        } catch (InterruptedException ignored) {}
-
-        // Look for 'Add to Cart' or product buttons
-        List<WebElement> addToCartButtons = driver.findElements(
-                AppiumBy.androidUIAutomator("new UiSelector().textContains(\"Add to Cart\")")
+        // Wait for ShopEasy home screen elements to render
+        WebElement categoriesHeader = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        AppiumBy.androidUIAutomator("new UiSelector().text(\"Categories\")")
+                )
         );
+        System.out.println("✅ App Home Screen loaded. Found: " + categoriesHeader.getText());
 
-        if (addToCartButtons.isEmpty()) {
-            // Fallback: search for any button or clickable item on screen
-            addToCartButtons = driver.findElements(
-                    AppiumBy.xpath("//android.widget.Button[contains(@text, 'Add') or contains(@content-desc, 'Add')]")
-            );
+        System.out.println("\n--- Step 2: Filter by Category ('Phones') ---");
+        List<WebElement> phonesCategory = driver.findElements(
+                AppiumBy.androidUIAutomator("new UiSelector().text(\"Phones\")")
+        );
+        if (!phonesCategory.isEmpty()) {
+            phonesCategory.get(0).click();
+            System.out.println("✅ Selected 'Phones' category filter.");
+            Thread.sleep(1500);
         }
 
-        if (!addToCartButtons.isEmpty()) {
-            System.out.println("Found " + addToCartButtons.size() + " 'Add to Cart' action(s).");
-            WebElement firstButton = addToCartButtons.get(0);
-            System.out.println("Clicking first 'Add to Cart' button...");
-            firstButton.click();
-            System.out.println("✅ Clicked 'Add to Cart' successfully!");
+        System.out.println("\n--- Step 3: Locate Product & Tap 'Buy' ---");
+        List<WebElement> buyButtons = driver.findElements(
+                AppiumBy.androidUIAutomator("new UiSelector().text(\"Buy\")")
+        );
+        if (!buyButtons.isEmpty()) {
+            System.out.println("Found " + buyButtons.size() + " 'Buy' button(s). Clicking first item...");
+            buyButtons.get(0).click();
+            System.out.println("✅ Tapped 'Buy' button.");
         } else {
-            System.out.println("ℹ️ 'Add to Cart' button not immediately visible, attempting to tap first product item...");
-            List<WebElement> items = driver.findElements(
-                    AppiumBy.xpath("//android.widget.TextView[string-length(@text) > 3]")
+            System.out.println("Tapping on product card directly...");
+            List<WebElement> productTitles = driver.findElements(
+                    AppiumBy.androidUIAutomator("new UiSelector().textContains(\"Pixel\")")
             );
-            if (!items.isEmpty()) {
-                System.out.println("Tapping item: " + items.get(0).getText());
-                items.get(0).click();
+            if (!productTitles.isEmpty()) {
+                productTitles.get(0).click();
+                System.out.println("✅ Tapped on product: " + productTitles.get(0).getText());
             }
         }
 
-        System.out.println("\n--- Step 3: Perform Downward Scroll on Real Device ---");
+        System.out.println("\n--- Step 4: Perform Downward Scroll on Real Device ---");
         performScrollGesture();
         System.out.println("✅ Scroll gesture completed.");
 
-        System.out.println("\n--- Step 4: Check Cart / Navigation ---");
-        List<WebElement> cartIcons = driver.findElements(
-                AppiumBy.androidUIAutomator("new UiSelector().textContains(\"Cart\")")
+        System.out.println("\n--- Step 5: Navigate to Cart ---");
+        List<WebElement> cartTab = driver.findElements(
+                AppiumBy.androidUIAutomator("new UiSelector().text(\"Cart\")")
         );
-        if (!cartIcons.isEmpty()) {
-            System.out.println("Cart indicator/screen found: " + cartIcons.get(0).getText());
+        if (!cartTab.isEmpty()) {
+            cartTab.get(0).click();
+            System.out.println("✅ Switched to 'Cart' screen.");
+            Thread.sleep(1500);
         }
 
         System.out.println("\n🎉 ShopEasy action workflow completed successfully on LAVA LXX504!");
     }
 
     /**
-     * W3C standard touch action for smooth vertical scrolling
+     * W3C standard touch action for vertical scrolling
      */
     private void performScrollGesture() {
         Dimension size = driver.manage().window().getSize();
         int startX = size.width / 2;
-        int startY = (int) (size.height * 0.75);
-        int endY = (int) (size.height * 0.25);
+        int startY = (int) (size.height * 0.70);
+        int endY = (int) (size.height * 0.30);
 
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence swipe = new Sequence(finger, 1);
 
         swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
         swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        swipe.addAction(finger.createPointerMove(Duration.ofMillis(800), PointerInput.Origin.viewport(), startX, endY));
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(600), PointerInput.Origin.viewport(), startX, endY));
         swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
         driver.perform(Collections.singletonList(swipe));
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void tearDown() {
         if (driver != null) {
             System.out.println("\n🔚 Releasing device back to Device Farm pool...");
-            driver.quit();
-            System.out.println("✅ Session terminated cleanly.");
+            try {
+                driver.quit();
+                System.out.println("✅ Session terminated cleanly.");
+            } catch (Exception e) {
+                System.err.println("Warning: Error closing session: " + e.getMessage());
+            }
         }
     }
 
     /**
-     * Optional: Allows running directly as a standalone Java application without Maven test runner
+     * Direct standalone execution support (Run without TestNG runner)
      */
     public static void main(String[] args) {
         ShopEasyDeviceFarmTest test = new ShopEasyDeviceFarmTest();
