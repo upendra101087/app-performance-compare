@@ -1,0 +1,18 @@
+{
+  "platform": "Android",
+  "device_udid": "auto",
+  "iterations": 3,
+  "scenario_duration_sec": 15,
+  "apps": [
+    {
+      "label": "Angelone",
+      "package_name": "com.msf.angelmobile",
+      "main_activity": "com.angelbroking.spark.common.MainActivity"
+    },
+    {
+      "label": "Groww",
+      "package_name": "com.nextbillion.groww",
+      "main_activity": "com.nextbillion.groww.genesys.explore.activities.MainNativeActivity"
+    }
+  ]
+}

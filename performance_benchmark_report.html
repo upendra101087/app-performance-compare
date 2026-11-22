@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile App Performance Benchmark Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0b0f19; color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+        .card { background: #131b2e; border: 1px solid #1e293b; border-radius: 0.875rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+    <div class="max-w-7xl mx-auto space-y-8">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-6">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
+                    <span class="w-3.5 h-8 bg-indigo-500 rounded-full inline-block"></span>
+                    Mobile App Performance Benchmark
+                </h1>
+                <p class="text-slate-400 mt-1">Multi-App Comparative Analysis: Startup, CPU, Memory, Jank, FPS, Network & Disk I/O</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center gap-3">
+                <span class="px-3.5 py-1.5 bg-emerald-950/80 border border-emerald-500/40 rounded-full text-emerald-300 text-xs font-semibold flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Physical Device Tested
+                </span>
+                <span class="px-3.5 py-1.5 bg-indigo-950/80 border border-indigo-500/40 rounded-full text-indigo-300 text-xs font-semibold">
+                    Mac Mini Hub Engine
+                </span>
+            </div>
+        </div>
+
+        <!-- Category Winners & Champion Highlight -->
+        <div class="card p-6 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border-indigo-900/50">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>🏆</span> Category Winners & Scorecard
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Automated side-by-side performance evaluation across all 10 key telemetry dimensions</p>
+                </div>
+                <div class="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-2.5">
+                    <span class="text-2xl">👑</span>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-wider text-amber-400 font-bold">Overall Performance Champion</div>
+                        <div class="text-base font-extrabold text-white">Angelone <span class="text-xs text-slate-400 font-normal">(9 category wins)</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Winners Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">🚀 Cold Startup</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">475.0 ms</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">⚡ Hot Startup</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">49.0 ms</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">🔋 CPU Efficiency</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">8.26 %</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">🧠 Memory Footprint</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">244.75 MB</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">🧈 UI Smoothness (Lowest Jank)</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">0.0 %</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">🎯 Frame Rate (FPS)</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Groww</span>
+                <span class="text-sm font-bold text-emerald-400">57.8 FPS</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">📥 Network Download</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">11.58 KB</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">📤 Network Upload</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">37.02 KB</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">📖 Disk Read Efficiency</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">0.0 KB</span>
+            </div>
+        </div>
+        
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+                <span class="flex items-center gap-1.5">💾 Disk Write Efficiency</span>
+                <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[10px] uppercase font-bold">Winner</span>
+            </div>
+            <div class="flex items-baseline justify-between mt-1">
+                <span class="text-base font-extrabold text-white">Angelone</span>
+                <span class="text-sm font-bold text-emerald-400">0.0 KB</span>
+            </div>
+        </div>
+        
+            </div>
+        </div>
+
+        <!-- Comparative Summary Table with Winner Highlights -->
+        <div class="card p-6 overflow-x-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    Executive Comparison Table
+                </h2>
+                <span class="text-xs text-slate-400 flex items-center gap-1.5">
+                    <span class="inline-block px-1.5 py-0.2 bg-emerald-950 border border-emerald-500 text-emerald-400 rounded text-[10px] font-bold">🏆</span> indicates the winning app for that specific metric
+                </span>
+            </div>
+            <table class="w-full text-center text-sm border-collapse border border-slate-800">
+                <thead>
+                    <tr class="bg-slate-900/90 text-slate-400 uppercase text-xs tracking-wider">
+                        <th class="px-4 py-3.5 border border-slate-800 text-left">App Label</th>
+                        <th class="px-3 py-3.5 border border-slate-800">Cold Start</th>
+                        <th class="px-3 py-3.5 border border-slate-800">Hot Start</th>
+                        <th class="px-3 py-3.5 border border-slate-800">Avg CPU</th>
+                        <th class="px-3 py-3.5 border border-slate-800">RAM (PSS)</th>
+                        <th class="px-3 py-3.5 border border-slate-800">Jank Rate</th>
+                        <th class="px-3 py-3.5 border border-slate-800">FPS</th>
+                        <th class="px-3 py-3.5 border border-slate-800 text-teal-400 bg-teal-950/20">Net Down</th>
+                        <th class="px-3 py-3.5 border border-slate-800 text-cyan-400 bg-cyan-950/20">Net Up</th>
+                        <th class="px-3 py-3.5 border border-slate-800 text-amber-400 bg-amber-950/20">Disk Read</th>
+                        <th class="px-3 py-3.5 border border-slate-800 text-purple-400 bg-purple-950/20">Disk Write</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800 text-slate-200">
+                    
+        <tr class="hover:bg-slate-800/60 transition bg-indigo-950/20">
+            <td class="font-bold text-left px-4 py-3.5 border border-slate-800 text-white flex items-center justify-between">
+                <span>Angelone</span>
+                <span class="px-2 py-0.5 bg-amber-500/20 border border-amber-400/50 text-amber-300 text-xs rounded-full font-bold">👑 Champion</span>
+            </td>
+            <td class="px-3 py-2 border border-slate-800"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">475 ms <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">49 ms <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">8.26% <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">244.75 MB <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">0.0% <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="text-slate-300">1.0 FPS</span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-teal-950/10"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">11.58 KB <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-cyan-950/10"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">37.02 KB <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-amber-950/10"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">0.0 KB <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-purple-950/10"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">0.0 KB <span class="text-xs">🏆</span></span></td>
+        </tr>
+        
+        <tr class="hover:bg-slate-800/60 transition ">
+            <td class="font-bold text-left px-4 py-3.5 border border-slate-800 text-white flex items-center justify-between">
+                <span>Groww</span>
+                
+            </td>
+            <td class="px-3 py-2 border border-slate-800"><span class="text-slate-300">475 ms</span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="text-slate-300">55 ms</span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="text-slate-300">29.33%</span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="text-slate-300">306.55 MB</span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="text-slate-300">7.19%</span></td>
+            <td class="px-3 py-2 border border-slate-800"><span class="inline-flex items-center gap-1 text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/50 px-2 py-0.5 rounded shadow-sm">57.8 FPS <span class="text-xs">🏆</span></span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-teal-950/10"><span class="text-slate-300">135.96 KB</span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-cyan-950/10"><span class="text-slate-300">136.88 KB</span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-amber-950/10"><span class="text-slate-300">0.0 KB</span></td>
+            <td class="px-3 py-2 border border-slate-800 bg-purple-950/10"><span class="text-slate-300">0.0 KB</span></td>
+        </tr>
+        
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Charts Grid (2 Columns, 5 Charts) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Chart 1: Startup Latency -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>🚀</span> 1. Startup Latency
+                    </h3>
+                    <span class="text-xs text-indigo-400 font-medium">Lower is Better (ms)</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-4">Cold Process Initialization vs Warm/Hot Foreground Resume</p>
+                <div class="h-64"><canvas id="startupChart"></canvas></div>
+            </div>
+
+            <!-- Chart 2: CPU & Memory -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>🔋</span> 2. Resource Consumption
+                    </h3>
+                    <span class="text-xs text-pink-400 font-medium">Lower is Better</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-4">Average CPU Utilization (%) vs Memory Footprint (PSS MB)</p>
+                <div class="h-64"><canvas id="resourceChart"></canvas></div>
+            </div>
+
+            <!-- Chart 3: Jank & FPS -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>🧈</span> 3. UI Smoothness & FPS
+                    </h3>
+                    <span class="text-xs text-emerald-400 font-medium">Target 60 FPS</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-4">Jank % (Lower is better) vs Effective Rendering FPS (Higher is better)</p>
+                <div class="h-64"><canvas id="renderingChart"></canvas></div>
+            </div>
+
+            <!-- Chart 4: Network Download vs Upload -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>🌐</span> 4. Network Data Transfer
+                    </h3>
+                    <span class="text-xs text-teal-400 font-medium">Lower is Better (KB)</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-4">Separated Network Download (Rx) vs Upload (Tx) Payload Size</p>
+                <div class="h-64"><canvas id="networkChart"></canvas></div>
+            </div>
+
+            <!-- Chart 5: Disk Read vs Write -->
+            <div class="card p-6 md:col-span-2">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>💾</span> 5. Disk Storage I/O
+                    </h3>
+                    <span class="text-xs text-amber-400 font-medium">Lower is Better (KB)</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-4">Separated Block Storage Read Operations vs Cache/Database Writes</p>
+                <div class="h-64"><canvas id="diskChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const labels = ["Angelone", "Groww"];
+
+        // 1. Startup Chart
+        new Chart(document.getElementById('startupChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Cold Start (ms)', data: [475, 475], backgroundColor: '#6366f1' },
+                    { label: 'Hot Start (ms)', data: [49, 55], backgroundColor: '#38bdf8' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#1e293b' } } } }
+        });
+
+        // 2. Resource Chart
+        new Chart(document.getElementById('resourceChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Avg CPU %', data: [8.26, 29.33], backgroundColor: '#f59e0b' },
+                    { label: 'Avg RAM PSS (MB)', data: [244.75, 306.55], backgroundColor: '#ec4899' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#1e293b' } } } }
+        });
+
+        // 3. Rendering Chart
+        new Chart(document.getElementById('renderingChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Jank %', data: [0.0, 7.19], backgroundColor: '#f43f5e' },
+                    { label: 'FPS', data: [1.0, 57.8], backgroundColor: '#10b981' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#1e293b' } } } }
+        });
+
+        // 4. Network Chart (Download vs Upload)
+        new Chart(document.getElementById('networkChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Download (KB)', data: [11.58, 135.96], backgroundColor: '#14b8a6' },
+                    { label: 'Upload (KB)', data: [37.02, 136.88], backgroundColor: '#06b6d4' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#1e293b' } } } }
+        });
+
+        // 5. Disk Chart (Read vs Write)
+        new Chart(document.getElementById('diskChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Disk Read (KB)', data: [0.0, 0.0], backgroundColor: '#f59e0b' },
+                    { label: 'Disk Write (KB)', data: [0.0, 0.0], backgroundColor: '#a855f7' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#1e293b' } } } }
+        });
+    </script>
+</body>
+</html>

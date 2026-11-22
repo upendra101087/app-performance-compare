@@ -1,0 +1,18 @@
+{
+  "server": {
+    "port": 31337,
+    "address": "0.0.0.0",
+    "base-path": "/wd/hub",
+    "keep-alive-timeout": 800,
+    "plugin": {
+      "device-farm": {
+        "platform": "both",
+        "androidDeviceType": "both",
+        "iosDeviceType": "both",
+        "skipChromeDownload": true,
+        "maxSessions": 10,
+        "enableDashboard": true
+      }
+    }
+  }
+}

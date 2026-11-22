@@ -1,0 +1,13 @@
+{
+  "server": {
+    "port": 4723,
+    "address": "0.0.0.0",
+    "base-path": "/wd/hub",
+    "plugin": {
+      "device-farm": {
+        "platform": "both",
+        "hub": "http://127.0.0.1:31337"
+      }
+    }
+  }
+}

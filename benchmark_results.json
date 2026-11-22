@@ -1,0 +1,108 @@
+{
+  "Angelone": {
+    "package": "com.msf.angelmobile",
+    "startup": {
+      "cold_start_runs_ms": [
+        561,
+        458,
+        475
+      ],
+      "cold_start_median_ms": 475,
+      "hot_start_runs_ms": [
+        53,
+        48,
+        49
+      ],
+      "hot_start_median_ms": 49
+    },
+    "performance": {
+      "cpu": {
+        "avg_percent": 8.26,
+        "max_percent": 31.0,
+        "p95_percent": 26.51,
+        "samples_count": 14
+      },
+      "memory": {
+        "avg_pss_mb": 244.75,
+        "max_pss_mb": 247.7,
+        "last_sample": {
+          "total_pss_mb": 246.62,
+          "native_heap_mb": 36.9,
+          "dalvik_heap_mb": 18.93,
+          "graphics_mb": 66.23
+        }
+      },
+      "rendering": {
+        "total_frames": 0,
+        "janky_frames": 0,
+        "jank_percentage": 0.0,
+        "approx_fps": 1.0,
+        "p50_frame_time_ms": 4950.0,
+        "p90_frame_time_ms": 4950.0,
+        "p95_frame_time_ms": 4950.0,
+        "p99_frame_time_ms": 4950.0
+      },
+      "disk": {
+        "read_kb": 0.0,
+        "write_kb": 0.0
+      },
+      "network": {
+        "download_kb": 11.58,
+        "upload_kb": 37.02
+      }
+    }
+  },
+  "Groww": {
+    "package": "com.nextbillion.groww",
+    "startup": {
+      "cold_start_runs_ms": [
+        571,
+        475,
+        469
+      ],
+      "cold_start_median_ms": 475,
+      "hot_start_runs_ms": [
+        55,
+        55,
+        55
+      ],
+      "hot_start_median_ms": 55
+    },
+    "performance": {
+      "cpu": {
+        "avg_percent": 29.33,
+        "max_percent": 96.6,
+        "p95_percent": 96.54,
+        "samples_count": 13
+      },
+      "memory": {
+        "avg_pss_mb": 306.55,
+        "max_pss_mb": 393.37,
+        "last_sample": {
+          "total_pss_mb": 389.26,
+          "native_heap_mb": 108.35,
+          "dalvik_heap_mb": 27.06,
+          "graphics_mb": 167.59
+        }
+      },
+      "rendering": {
+        "total_frames": 1071,
+        "janky_frames": 77,
+        "jank_percentage": 7.19,
+        "approx_fps": 57.8,
+        "p50_frame_time_ms": 10.0,
+        "p90_frame_time_ms": 12.0,
+        "p95_frame_time_ms": 20.0,
+        "p99_frame_time_ms": 53.0
+      },
+      "disk": {
+        "read_kb": 0.0,
+        "write_kb": 0.0
+      },
+      "network": {
+        "download_kb": 135.96,
+        "upload_kb": 136.88
+      }
+    }
+  }
+}

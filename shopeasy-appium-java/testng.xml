@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="ShopEasy Device Farm Suite" verbose="1">
+    <test name="Lava Android Device Test">
+        <classes>
+            <class name="com.example.shopeasy.ShopEasyDeviceFarmTest"/>
+        </classes>
+    </test>
+</suite>
