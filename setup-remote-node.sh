@@ -250,8 +250,120 @@ have npm || fail "npm is not available."
 ok "Node.js: $(node -v)"
 ok "npm:     $(npm -v)"
 
-# ── 3. Android Platform-Tools (adb) ───────────────────────────────────
-header "3. Android Platform-Tools (adb)"
+# tsx TypeScript execution runtime
+info "Checking tsx (TypeScript runtime loader)..."
+if ! have tsx; then
+  info "Installing tsx globally via npm..."
+  npm install -g tsx
+  ok "Installed tsx globally."
+else
+  ok "tsx is already installed globally: $(tsx --version 2>/dev/null || echo 'installed')"
+fi
+
+# ── 3. OpenJDK Setup (Java 17+) ───────────────────────────────────────
+header "3. OpenJDK (Java 17+ for Android SDK & Appium - CVE-2026-114938 Patched)"
+
+SHOULD_INSTALL_JAVA=false
+
+# Helper to check if a Java version is vulnerable to CVE-2026-114938 ("Java4Shell")
+# Disclosed Nov 17, 2026: Heap corruption / RCE in AVX-512 VBMI Base64 decoder intrinsic.
+# Patched in: 17.0.21+, 21.0.13+, 25.0.5+, 27.0.1+
+is_java4shell_vulnerable() {
+  local ver_str="$1"
+  local ver=$(printf '%s\n' "$ver_str" | sed -n 's/.*version "\([0-9.]*\).*/\1/p')
+  if [[ -z "$ver" ]]; then
+    ver=$(printf '%s\n' "$ver_str" | sed -n 's/.*openjdk \([0-9.]*\).*/\1/p')
+  fi
+  local major=$(printf '%s\n' "$ver" | cut -d. -f1)
+  local patch=$(printf '%s\n' "$ver" | cut -d. -f3)
+
+  case "$major" in
+    17)
+      if [[ -z "$patch" ]] || (( patch < 21 )); then return 0; fi
+      ;;
+    21)
+      if [[ -z "$patch" ]] || (( patch < 13 )); then return 0; fi
+      ;;
+    25)
+      if [[ -z "$patch" ]] || (( patch < 5 )); then return 0; fi
+      ;;
+    27)
+      if [[ -z "$patch" ]] || (( patch < 1 )); then return 0; fi
+      ;;
+    *)
+      # Intermediate non-LTS releases between 17 and 27 without backported patches
+      if [[ -n "$major" ]] && (( major >= 17 && major < 27 )); then return 0; fi
+      ;;
+  esac
+  return 1
+}
+
+if have java; then
+  JAVA_VERSION_RAW="$(java -version 2>&1 | head -1)"
+  JAVA_MAJOR="$(java -version 2>&1 | sed -n 's/.*version "\([0-9]*\).*/\1/p')"
+  if [[ -z "$JAVA_MAJOR" ]]; then
+    JAVA_MAJOR="$(java -version 2>&1 | sed -n 's/.*openjdk \([0-9]*\).*/\1/p')"
+  fi
+
+  if [[ -n "$JAVA_MAJOR" ]] && (( JAVA_MAJOR < 17 )); then
+    warn "Installed Java ($JAVA_VERSION_RAW) is lower than required Java 17+"
+    if prompt_upgrade "OpenJDK" "$JAVA_VERSION_RAW (requires >= 17)" "Y"; then
+      SHOULD_INSTALL_JAVA=true
+    fi
+  elif is_java4shell_vulnerable "$JAVA_VERSION_RAW"; then
+    warn "SECURITY ALERT: Installed Java ($JAVA_VERSION_RAW) is vulnerable to Java4Shell (CVE-2026-114938)!"
+    info "CVE-2026-114938 is a Critical RCE vulnerability in OpenJDK's Base64 AVX-512 intrinsic."
+    info "Fixed versions: OpenJDK 21.0.13+, 17.0.21+, 25.0.5+, 27.0.1+."
+    if prompt_upgrade "OpenJDK (vulnerability patch for CVE-2026-114938)" "$JAVA_VERSION_RAW -> OpenJDK 21 (21.0.13+ patched)" "Y"; then
+      SHOULD_INSTALL_JAVA=true
+    else
+      warn "Proceeding with unpatched Java. Mitigation JVM flag: -XX:-UseBASE64Intrinsics"
+      ok "Keeping installed Java: $JAVA_VERSION_RAW"
+    fi
+  else
+    if prompt_upgrade "OpenJDK" "$JAVA_VERSION_RAW (CVE-2026-114938 patched)" "N"; then
+      SHOULD_INSTALL_JAVA=true
+    else
+      ok "Installed Java is secure (patched against CVE-2026-114938): $JAVA_VERSION_RAW"
+    fi
+  fi
+else
+  info "Java is not installed. Installing latest patched OpenJDK 21..."
+  SHOULD_INSTALL_JAVA=true
+fi
+
+if [[ "$SHOULD_INSTALL_JAVA" == true ]]; then
+  info "Installing/upgrading to patched OpenJDK 21 (CVE-2026-114938 fixed: 21.0.13+)..."
+  if [[ "$OS" == "Darwin" ]]; then
+    brew install openjdk@21 || brew upgrade openjdk@21 || true
+    brew upgrade openjdk openjdk@17 openjdk@25 2>/dev/null || true
+    JDK_PREFIX="$(brew --prefix openjdk@21 2>/dev/null || brew --prefix openjdk 2>/dev/null)"
+    export PATH="$JDK_PREFIX/bin:$PATH"
+    if [[ -d "$JDK_PREFIX/libexec/openjdk.jdk/Contents/Home" ]]; then
+      export JAVA_HOME="$JDK_PREFIX/libexec/openjdk.jdk/Contents/Home"
+    else
+      export JAVA_HOME="$JDK_PREFIX"
+    fi
+    if [[ -d "$JDK_PREFIX/libexec/openjdk.jdk" ]] && have sudo; then
+      sudo ln -sfn "$JDK_PREFIX/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-21.jdk 2>/dev/null || true
+    fi
+  elif [[ "$OS" == "Linux" ]]; then
+    if have apt-get; then
+      sudo apt-get update
+      sudo apt-get install -y openjdk-21-jdk
+      export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+    fi
+  fi
+fi
+
+if have java; then
+  JAVA_HOME_VALUE="${JAVA_HOME:-$(/usr/libexec/java_home 2>/dev/null || which java)}"
+  export JAVA_HOME="$JAVA_HOME_VALUE"
+  ok "JAVA_HOME active: $JAVA_HOME ($(java -version 2>&1 | head -1))"
+fi
+
+# ── 4. Android Platform-Tools (adb) ───────────────────────────────────
+header "4. Android Platform-Tools (adb)"
 
 SHOULD_INSTALL_ADB=false
 
@@ -283,8 +395,8 @@ else
   warn "adb is not on PATH. Please ensure adb is accessible to detect connected Android devices."
 fi
 
-# ── 4. Appium 3.x CLI ─────────────────────────────────────────────────
-header "4. Appium 3.x CLI"
+# ── 5. Appium 3.x CLI ─────────────────────────────────────────────────
+header "5. Appium 3.x CLI"
 
 SHOULD_INSTALL_APPIUM=false
 
@@ -315,8 +427,8 @@ fi
 
 ok "Appium CLI: $(appium -v)"
 
-# ── 5. Appium Drivers & Device Farm Plugin ────────────────────────────
-header "5. Appium Drivers & Device Farm Plugin"
+# ── 6. Appium Drivers & Device Farm Plugin ────────────────────────────
+header "6. Appium Drivers & Device Farm Plugin"
 
 INSTALLED_DRIVERS="$(appium driver list --installed 2>&1 || true)"
 
@@ -376,6 +488,60 @@ else
   info "Installing Appium Device Farm plugin..."
   appium plugin install --source=npm appium-device-farm || true
 fi
+
+# mjpeg-consumer is required by UiAutomator2 and XCUITest drivers for MJPEG streaming
+info "Checking mjpeg-consumer dependency (required for Appium video/streaming)..."
+if ! npm list -g --depth=0 2>/dev/null | grep -q 'mjpeg-consumer'; then
+  info "Installing mjpeg-consumer globally via npm..."
+  npm install -g mjpeg-consumer
+  ok "Installed mjpeg-consumer globally."
+else
+  ok "mjpeg-consumer is already installed globally."
+fi
+
+# Also install into ~/.appium so drivers find it locally regardless of subshell environment
+if [[ -d "$HOME/.appium" ]]; then
+  info "Ensuring mjpeg-consumer is accessible in Appium home (~/.appium)..."
+  (cd "$HOME/.appium" && npm install mjpeg-consumer >/dev/null 2>&1) || true
+fi
+
+# ── 7. Shell Environment Profile Persistence ──────────────────────────
+header "7. Shell Environment Profile Persistence"
+
+PROFILE_FILE=""
+if [[ -f "$HOME/.zprofile" ]] || [[ "${SHELL:-}" == *"zsh"* ]]; then
+  PROFILE_FILE="$HOME/.zprofile"
+elif [[ -f "$HOME/.bashrc" ]]; then
+  PROFILE_FILE="$HOME/.bashrc"
+else
+  PROFILE_FILE="$HOME/.profile"
+fi
+
+touch "$PROFILE_FILE"
+
+# Export NODE_PATH in current running shell so subsequent steps have it
+NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || echo '')"
+if [[ -n "$NPM_GLOBAL_ROOT" ]]; then
+  export NODE_PATH="$NPM_GLOBAL_ROOT${NODE_PATH:+:$NODE_PATH}"
+fi
+
+MARKER_START="# >>> APPIUM DEVICE FARM NODE ENV >>>"
+MARKER_END="# <<< APPIUM DEVICE FARM NODE ENV <<<"
+
+# Remove existing block to prevent duplicates
+if grep -qF "$MARKER_START" "$PROFILE_FILE"; then
+  sed -i '' "/$MARKER_START/,/$MARKER_END/d" "$PROFILE_FILE" 2>/dev/null || sed -i "/$MARKER_START/,/$MARKER_END/d" "$PROFILE_FILE" 2>/dev/null || true
+fi
+
+cat >> "$PROFILE_FILE" << EOF
+$MARKER_START
+${JAVA_HOME:+export JAVA_HOME="$JAVA_HOME"}
+# Global Node module resolution for tools like Appium mjpeg-consumer
+export NODE_PATH="\$(npm root -g 2>/dev/null):\$NODE_PATH"
+$MARKER_END
+EOF
+
+ok "Environment variables persisted to $PROFILE_FILE"
 
 # ── Summary & Next Steps ──────────────────────────────────────────────
 header "Remote Node Setup Complete!"

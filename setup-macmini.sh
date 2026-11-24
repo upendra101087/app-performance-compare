@@ -209,10 +209,53 @@ have npm || fail "npm is not available."
 ok "Node.js: $(node -v)"
 ok "npm:     $(npm -v)"
 
+# tsx TypeScript execution runtime
+info "Checking tsx (TypeScript runtime loader)..."
+if ! have tsx; then
+  info "Installing tsx globally via npm..."
+  npm install -g tsx
+  ok "Installed tsx globally."
+else
+  ok "tsx is already installed globally: $(tsx --version 2>/dev/null || echo 'installed')"
+fi
+
 # ── 3. OpenJDK Setup (Java 17+) ───────────────────────────────────────
-header "3. OpenJDK (Java 17+ for Android SDK & Appium)"
+header "3. OpenJDK (Java 17+ for Android SDK & Appium - CVE-2026-114938 Patched)"
 
 SHOULD_INSTALL_JAVA=false
+
+# Helper to check if a Java version is vulnerable to CVE-2026-114938 ("Java4Shell")
+# Disclosed Nov 17, 2026: Heap corruption / RCE in AVX-512 VBMI Base64 decoder intrinsic.
+# Patched in: 17.0.21+, 21.0.13+, 25.0.5+, 27.0.1+
+is_java4shell_vulnerable() {
+  local ver_str="$1"
+  local ver=$(printf '%s\n' "$ver_str" | sed -n 's/.*version "\([0-9.]*\).*/\1/p')
+  if [[ -z "$ver" ]]; then
+    ver=$(printf '%s\n' "$ver_str" | sed -n 's/.*openjdk \([0-9.]*\).*/\1/p')
+  fi
+  local major=$(printf '%s\n' "$ver" | cut -d. -f1)
+  local patch=$(printf '%s\n' "$ver" | cut -d. -f3)
+
+  case "$major" in
+    17)
+      if [[ -z "$patch" ]] || (( patch < 21 )); then return 0; fi
+      ;;
+    21)
+      if [[ -z "$patch" ]] || (( patch < 13 )); then return 0; fi
+      ;;
+    25)
+      if [[ -z "$patch" ]] || (( patch < 5 )); then return 0; fi
+      ;;
+    27)
+      if [[ -z "$patch" ]] || (( patch < 1 )); then return 0; fi
+      ;;
+    *)
+      # Intermediate non-LTS releases between 17 and 27 without backported patches
+      if [[ -n "$major" ]] && (( major >= 17 && major < 27 )); then return 0; fi
+      ;;
+  esac
+  return 1
+}
 
 if have java; then
   JAVA_VERSION_RAW="$(java -version 2>&1 | head -1)"
@@ -226,22 +269,33 @@ if have java; then
     if prompt_upgrade "OpenJDK" "$JAVA_VERSION_RAW (requires >= 17)" "Y"; then
       SHOULD_INSTALL_JAVA=true
     fi
-  else
-    if prompt_upgrade "OpenJDK" "$JAVA_VERSION_RAW" "N"; then
+  elif is_java4shell_vulnerable "$JAVA_VERSION_RAW"; then
+    warn "SECURITY ALERT: Installed Java ($JAVA_VERSION_RAW) is vulnerable to Java4Shell (CVE-2026-114938)!"
+    info "CVE-2026-114938 is a Critical RCE vulnerability in OpenJDK's Base64 AVX-512 intrinsic."
+    info "Fixed versions: OpenJDK 21.0.13+, 17.0.21+, 25.0.5+, 27.0.1+."
+    if prompt_upgrade "OpenJDK (vulnerability patch for CVE-2026-114938)" "$JAVA_VERSION_RAW -> OpenJDK 21 (21.0.13+ patched)" "Y"; then
       SHOULD_INSTALL_JAVA=true
     else
+      warn "Proceeding with unpatched Java. Mitigation JVM flag: -XX:-UseBASE64Intrinsics"
       ok "Keeping installed Java: $JAVA_VERSION_RAW"
+    fi
+  else
+    if prompt_upgrade "OpenJDK" "$JAVA_VERSION_RAW (CVE-2026-114938 patched)" "N"; then
+      SHOULD_INSTALL_JAVA=true
+    else
+      ok "Installed Java is secure (patched against CVE-2026-114938): $JAVA_VERSION_RAW"
     fi
   fi
 else
-  info "Java is not installed. Installing OpenJDK 17 via Homebrew..."
+  info "Java is not installed. Installing latest patched OpenJDK 21 via Homebrew..."
   SHOULD_INSTALL_JAVA=true
 fi
 
 if [[ "$SHOULD_INSTALL_JAVA" == true ]]; then
-  info "Installing/upgrading OpenJDK 17..."
-  brew install openjdk@17 || brew upgrade openjdk@17 || true
-  JDK_PREFIX="$(brew --prefix openjdk@17 2>/dev/null || brew --prefix openjdk)"
+  info "Installing/upgrading to patched OpenJDK 21 (CVE-2026-114938 fixed: 21.0.13+)..."
+  brew install openjdk@21 || brew upgrade openjdk@21 || true
+  brew upgrade openjdk openjdk@17 openjdk@25 2>/dev/null || true
+  JDK_PREFIX="$(brew --prefix openjdk@21 2>/dev/null || brew --prefix openjdk 2>/dev/null)"
   export PATH="$JDK_PREFIX/bin:$PATH"
   if [[ -d "$JDK_PREFIX/libexec/openjdk.jdk/Contents/Home" ]]; then
     export JAVA_HOME="$JDK_PREFIX/libexec/openjdk.jdk/Contents/Home"
@@ -250,14 +304,14 @@ if [[ "$SHOULD_INSTALL_JAVA" == true ]]; then
   fi
   # Setup system wrapper link if sudo is available
   if [[ -d "$JDK_PREFIX/libexec/openjdk.jdk" ]] && have sudo; then
-    sudo ln -sfn "$JDK_PREFIX/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true
+    sudo ln -sfn "$JDK_PREFIX/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-21.jdk 2>/dev/null || true
   fi
 fi
 
 if have java; then
   JAVA_HOME_VALUE="${JAVA_HOME:-$(/usr/libexec/java_home 2>/dev/null || which java)}"
   export JAVA_HOME="$JAVA_HOME_VALUE"
-  ok "JAVA_HOME active: $JAVA_HOME"
+  ok "JAVA_HOME active: $JAVA_HOME ($(java -version 2>&1 | head -1))"
 fi
 
 # ── 4. Android Platform-Tools (adb) & SDK ─────────────────────────────
@@ -427,6 +481,22 @@ else
   appium plugin install --source=npm appium-device-farm || true
 fi
 
+# mjpeg-consumer is required by UiAutomator2 and XCUITest drivers for MJPEG streaming
+info "Checking mjpeg-consumer dependency (required for Appium video/streaming)..."
+if ! npm list -g --depth=0 2>/dev/null | grep -q 'mjpeg-consumer'; then
+  info "Installing mjpeg-consumer globally via npm..."
+  npm install -g mjpeg-consumer
+  ok "Installed mjpeg-consumer globally."
+else
+  ok "mjpeg-consumer is already installed globally."
+fi
+
+# Also install into ~/.appium so drivers find it locally regardless of subshell environment
+if [[ -d "$HOME/.appium" ]]; then
+  info "Ensuring mjpeg-consumer is accessible in Appium home (~/.appium)..."
+  (cd "$HOME/.appium" && npm install mjpeg-consumer >/dev/null 2>&1) || true
+fi
+
 # ── 8. Python Performance Telemetry Dependencies ──────────────────────
 header "8. Python 3 & Telemetry Dependencies"
 
@@ -468,6 +538,12 @@ fi
 
 touch "$PROFILE_FILE"
 
+# Export NODE_PATH in current running shell so subsequent steps have it
+NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || echo '')"
+if [[ -n "$NPM_GLOBAL_ROOT" ]]; then
+  export NODE_PATH="$NPM_GLOBAL_ROOT${NODE_PATH:+:$NODE_PATH}"
+fi
+
 MARKER_START="# >>> APPIUM DEVICE FARM HUB ENV >>>"
 MARKER_END="# <<< APPIUM DEVICE FARM HUB ENV <<<"
 
@@ -482,6 +558,8 @@ export JAVA_HOME="${JAVA_HOME:-}"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 export ANDROID_SDK_ROOT="\$ANDROID_HOME"
 export PATH="\$PATH:\$ANDROID_HOME/platform-tools:\$ANDROID_HOME/cmdline-tools/latest/bin"
+# Global Node module resolution for tools like Appium mjpeg-consumer
+export NODE_PATH="\$(npm root -g 2>/dev/null):\$NODE_PATH"
 $MARKER_END
 EOF
 
