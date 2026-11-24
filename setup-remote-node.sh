@@ -547,6 +547,15 @@ ok "Environment variables persisted to $PROFILE_FILE"
 header "Remote Node Setup Complete!"
 
 echo -e "${GREEN}✓ Node environment verified and ready.${NC}"
+echo
+echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+echo -e "${YELLOW}${BOLD}ACTION REQUIRED: Activate Environment Variables${NC}"
+echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+echo -e "To use the updated environment in this terminal session, run:"
+echo -e "  ${BOLD}${CYAN}source $PROFILE_FILE${NC}"
+echo
+echo -e "Or simply open a new terminal window or tab."
+echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
 echo -e "Central Hub: ${BOLD}${HUB_URL}${NC}"
 echo
 echo -e "${BOLD}To start sharing devices connected to this machine:${NC}"
