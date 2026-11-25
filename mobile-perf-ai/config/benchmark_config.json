@@ -1,0 +1,35 @@
+{
+  "device_udid": "auto",
+  "hub_url": "http://127.0.0.1:31337/wd/hub",
+  "apps": [
+    {
+      "label": "Groww",
+      "package_name": "com.nextbillion.groww",
+      "mpin": "1234",
+      "enabled": true
+    },
+    {
+      "label": "AngelOne",
+      "package_name": "com.msf.angelmobile",
+      "mpin": "1234",
+      "enabled": true
+    },
+    {
+      "label": "Dhan",
+      "package_name": "com.dhan.live",
+      "mpin": "1234",
+      "enabled": true
+    }
+  ],
+  "settings": {
+    "scroll_iterations": 10,
+    "chart_pinch_cycles": 5,
+    "hot_resume_dwell_sec": 2.0,
+    "use_ai_self_healing": true,
+    "use_ai_analyst": true
+  },
+  "output": {
+    "json_path": "benchmark_results.json",
+    "html_path": "performance_benchmark_report.html"
+  }
+}
